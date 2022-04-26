@@ -7,6 +7,6 @@ title = "Roguelike tutorial with Rust and Bevy"
 
 [output.html]
 mathjax-support = true
-site-url = "/bevy_roguelike_tutorial/"
-git-repository-url = "https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/master/tutorial"
-edit-url-template = "https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/edit/master/tutorial/{path}"
+site-url = "/rust_bevy_roguelike_tutorial/"
+git-repository-url = "https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/tutorial"
+edit-url-template = "https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/edit/main/tutorial/{path}"
