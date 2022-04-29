@@ -94,5 +94,8 @@ Hello, world!
 
 Everything is compiled and Bevy is added. Goal achieved!
 
+The final code could be found here:
+[Chapter 01 code](https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter01)
+
 
 

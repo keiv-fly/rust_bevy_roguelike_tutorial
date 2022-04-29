@@ -123,6 +123,12 @@ The player entity is created with the `spawn()` command and then we add componen
 - `transform` is the position of the sprite. 0,0,0 means that it is in the center of the screen.
 - `sprite` is the sprite that we use from the sprite sheet. Number 94 is the position of the sprite in the sprite sheet (3 lines each have 31 symbols totaling 93 symbols. We start counting at 0 so 92 is the last symbol in line 3 and 93 is the first symbol in line 4. We need the second symbol so the number should be 94)
 
+And after `cargo run` we get the following picture:
+![Roguelike02-02](img/Roguelike02-02.png)
+
+The final code could be found here:
+[Chapter02 code](https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter02)
+
 The final code of `main.rs` looks like this:
 ```rust, noplayground
 use bevy::prelude::{
