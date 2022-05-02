@@ -3,7 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Draw &quot;@&quot; symbol and moving around - Roguelike tutorial with Rust and Bevy</title>
+        <title>Drawing the &quot;@&quot; symbol and moving around - Roguelike tutorial with Rust and Bevy</title>
 
 
         <!-- Custom HTML head -->
@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html" class="active"><strong aria-hidden="true">2.</strong> Draw "@" symbol and moving around</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html" class="active"><strong aria-hidden="true">2.</strong> Drawing the "@" symbol and moving around</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -150,7 +150,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="draw--symbol-and-moving-around"><a class="header" href="#draw--symbol-and-moving-around">Draw &quot;@&quot; symbol and moving around</a></h1>
+                        <h1 id="drawing-the--symbol-and-moving-around"><a class="header" href="#drawing-the--symbol-and-moving-around">Drawing the &quot;@&quot; symbol and moving around</a></h1>
 <h2 id="showing-an-empty-black-window-with-bevy"><a class="header" href="#showing-an-empty-black-window-with-bevy">Showing an empty black window with Bevy</a></h2>
 <p>Let's change the code in <code>main.rs</code> to the following:</p>
 <pre><code class="language-rust  noplayground">use bevy::prelude::{App, ClearColor, Color, DefaultPlugins, WindowDescriptor};
@@ -178,7 +178,7 @@ fn main() {
             ..Default::default()
         })
 </code></pre>
-<p>is responsible for the creation of the window. 10 is the number of pixels in our font. 80 and 50 are the number of columns and lines we will have in our window.</p>
+<p>is responsible for the creation of the window. 22 is the width in pixels in our font and 36 is the height. 80 and 50 are the number of columns and lines we will have in our window.</p>
 <p>This line is responsible for almost black color of the background:</p>
 <pre><code class="language-rust  noplayground">        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
 </code></pre>
@@ -250,17 +250,106 @@ pub struct Player;
 </ul>
 <p>And after <code>cargo run</code> we get the following picture:
 <img src="img/Roguelike02-02.png" alt="Roguelike02-02" /></p>
+<h2 id="moving-around"><a class="header" href="#moving-around">Moving around</a></h2>
+<p>Let's add the position in terms of columns and lines of characters (tile position) to the player. To do this we add the following component:</p>
+<pre><code class="language-rust  noplayground">#[derive(Component)]
+pub struct TilePosition {
+    x: i32,
+    y: i32,
+    z: i32,
+}
+</code></pre>
+<p>And also add the component to the player in the setup:</p>
+<pre><code class="language-rust  noplayground">    // Spawn the player
+    commands
+        .spawn()
+        .insert(Player)
+        .insert_bundle(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+            sprite: TextureAtlasSprite::new(94),
+            ..Default::default()
+        })
+        .insert(TilePosition { x: 0, y: 0, z: 0 });
+</code></pre>
+<p>This function will transform tile position to transform position:</p>
+<pre><code class="language-rust  noplayground">fn tile_position_to_transform(tile_position: Mut&lt;TilePosition&gt;, mut transform: Mut&lt;Transform&gt;) {
+    transform.translation = Vec3::new(
+        tile_position.x as f32 * TILE_WIDTH,
+        tile_position.y as f32 * TILE_HEIGHT,
+        tile_position.z as f32,
+    );
+}
+</code></pre>
+<p>This is a new system that will read the keyboard input:</p>
+<pre><code class="language-rust  noplayground">fn keyboard_input(
+    keys: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    mut q: Query&lt;(&amp;mut Transform, &amp;mut TilePosition), With&lt;Player&gt;&gt;,
+) {
+    let mut tile_position_changed = false;
+    let (transform, mut tile_position) = q.single_mut();
+    if keys.just_pressed(KeyCode::Up) {
+        tile_position.y += 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Down) {
+        tile_position.y -= 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Left) {
+        tile_position.x -= 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Right) {
+        tile_position.x += 1;
+        tile_position_changed = true;
+    }
+    if tile_position_changed {
+        tile_position_to_transform(tile_position, transform);
+    }
+}
+</code></pre>
+<p>Let's also add the system to the app:</p>
+<pre><code class="language-rust  noplayground">fn main() {
+    App::new()
+        .insert_resource(WindowDescriptor {
+            title: &quot;Roguelike Game&quot;.to_string(),
+            width: 80.0 * TILE_WIDTH,
+            height: 30.0 * TILE_HEIGHT,
+            present_mode: PresentMode::Immediate,
+            ..Default::default()
+        })
+        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
+        .add_plugins(DefaultPlugins)
+        .add_startup_system(setup)
+        .add_system(keyboard_input)
+        .run();
+}
+</code></pre>
+<p>Another thing that I changed in the code above is:</p>
+<pre><code class="language-rust  noplayground">present_mode: PresentMode::Immediate,
+</code></pre>
+<p>This make the movement more responsive and without any lag that was there previously.</p>
 <p>The final code could be found here:
 <a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter02">Chapter02 code</a></p>
 <p>The final code of <code>main.rs</code> looks like this:</p>
 <pre><code class="language-rust  noplayground">use bevy::prelude::{
-    App, AssetServer, Assets, ClearColor, Color, Commands, Component, DefaultPlugins, Handle,
-    OrthographicCameraBundle, Res, ResMut, SpriteSheetBundle, TextureAtlas, TextureAtlasSprite,
-    Transform, Vec2, Vec3, WindowDescriptor,
+    App, AssetServer, Assets, ClearColor, Color, Commands, Component, DefaultPlugins, Input,
+    KeyCode, Mut, OrthographicCameraBundle, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas,
+    TextureAtlasSprite, Transform, Vec2, Vec3, WindowDescriptor, With,
 };
+
+use bevy::window::PresentMode;
+
+const TILE_WIDTH: f32 = 22.;
+const TILE_HEIGHT: f32 = 36.;
 
 #[derive(Component)]
 pub struct Player;
+
+#[derive(Component)]
+pub struct TilePosition {
+    x: i32,
+    y: i32,
+    z: i32,
+}
 
 fn setup(
     mut commands: Commands,
@@ -269,7 +358,8 @@ fn setup(
 ) {
     // Setup the sprite sheet
     let texture_handle = asset_server.load(&quot;DejaVu Sans Mono22.png&quot;);
-    let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(22., 36.), 31, 7);
+    let texture_atlas =
+        TextureAtlas::from_grid(texture_handle, Vec2::new(TILE_WIDTH, TILE_HEIGHT), 31, 7);
     let texture_atlas_handle = texture_atlases.add(texture_atlas);
 
     // Add a 2D Camera
@@ -284,20 +374,55 @@ fn setup(
             transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
             sprite: TextureAtlasSprite::new(94),
             ..Default::default()
-        });
+        })
+        .insert(TilePosition { x: 0, y: 0, z: 0 });
+}
+
+fn tile_position_to_transform(tile_position: Mut&lt;TilePosition&gt;, mut transform: Mut&lt;Transform&gt;) {
+    transform.translation = Vec3::new(
+        tile_position.x as f32 * TILE_WIDTH,
+        tile_position.y as f32 * TILE_HEIGHT,
+        tile_position.z as f32,
+    );
+}
+
+fn keyboard_input(
+    keys: Res&lt;Input&lt;KeyCode&gt;&gt;,
+    mut q: Query&lt;(&amp;mut Transform, &amp;mut TilePosition), With&lt;Player&gt;&gt;,
+) {
+    let mut tile_position_changed = false;
+    let (transform, mut tile_position) = q.single_mut();
+    if keys.just_pressed(KeyCode::Up) {
+        tile_position.y += 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Down) {
+        tile_position.y -= 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Left) {
+        tile_position.x -= 1;
+        tile_position_changed = true;
+    } else if keys.just_pressed(KeyCode::Right) {
+        tile_position.x += 1;
+        tile_position_changed = true;
+    }
+    if tile_position_changed {
+        tile_position_to_transform(tile_position, transform);
+    }
 }
 
 fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * 22.0,
-            height: 30.0 * 36.0,
+            width: 80.0 * TILE_WIDTH,
+            height: 30.0 * TILE_HEIGHT,
+            present_mode: PresentMode::Immediate,
             ..Default::default()
         })
         .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
         .add_plugins(DefaultPlugins)
         .add_startup_system(setup)
+        .add_system(keyboard_input)
         .run();
 }
 </code></pre>
