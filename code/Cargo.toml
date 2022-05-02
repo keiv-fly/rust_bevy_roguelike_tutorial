@@ -2,5 +2,6 @@
 members = [
     "chapter01",
     "chapter02",
+    "chapter03",
 ]
 resolver = "2"

@@ -1,23 +1,16 @@
+mod constants;
+mod map;
+mod player;
+
 use bevy::prelude::{
-    App, AssetServer, Assets, ClearColor, Color, Commands, Component, DefaultPlugins, Input,
-    KeyCode, Mut, OrthographicCameraBundle, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas,
-    TextureAtlasSprite, Transform, Vec2, Vec3, WindowDescriptor, With,
+    App, AssetServer, Assets, ClearColor, Color, Commands, DefaultPlugins, Input, KeyCode, Mut,
+    OrthographicCameraBundle, Query, Res, ResMut, TextureAtlas, Transform, Vec2, Vec3,
+    WindowDescriptor, With,
 };
 
 use bevy::window::PresentMode;
 
-const TILE_WIDTH: f32 = 22.;
-const TILE_HEIGHT: f32 = 36.;
-
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Component)]
-pub struct TilePosition {
-    x: i32,
-    y: i32,
-    z: i32,
-}
+use constants::{TILE_HEIGHT, TILE_WIDTH, WINDOW_COLUMNS, WINDOW_ROWS};
 
 fn setup(
     mut commands: Commands,
@@ -33,34 +26,25 @@ fn setup(
     // Add a 2D Camera
     commands.spawn_bundle(OrthographicCameraBundle::new_2d());
 
-    // Spawn the player
-    commands
-        .spawn()
-        .insert(Player)
-        .insert_bundle(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            sprite: {
-                let mut sprite = TextureAtlasSprite::new(94);
-                sprite.color = Color::BLUE;
-                sprite
-            },
-            ..Default::default()
-        })
-        .insert(TilePosition { x: 0, y: 0, z: 0 });
-}
-
-fn tile_position_to_transform(tile_position: Mut<TilePosition>, mut transform: Mut<Transform>) {
-    transform.translation = Vec3::new(
-        tile_position.x as f32 * TILE_WIDTH,
-        tile_position.y as f32 * TILE_HEIGHT,
-        tile_position.z as f32,
+    //Create the map
+    let mut my_map = map::Map::new(
+        usize::try_from(WINDOW_COLUMNS).ok().unwrap(),
+        usize::try_from(WINDOW_ROWS).ok().unwrap(),
+        WINDOW_COLUMNS / 2,
+        WINDOW_ROWS / 2,
     );
+    my_map.spawn_walls(&mut commands, &texture_atlas_handle);
+
+    // Spawn the player
+    player::spawn_player(&mut commands, texture_atlas_handle);
+
+    // Insert the map as a resourse
+    commands.insert_resource(my_map);
 }
 
 fn keyboard_input(
     keys: Res<Input<KeyCode>>,
-    mut q: Query<(&mut Transform, &mut TilePosition), With<Player>>,
+    mut q: Query<(&mut Transform, &mut map::TilePosition), With<player::Player>>,
 ) {
     let mut tile_position_changed = false;
     let (transform, mut tile_position) = q.single_mut();
@@ -78,7 +62,7 @@ fn keyboard_input(
         tile_position_changed = true;
     }
     if tile_position_changed {
-        tile_position_to_transform(tile_position, transform);
+        map::tile_position_to_transform(tile_position.clone(), transform);
     }
 }
 
@@ -86,8 +70,8 @@ fn main() {
     App::new()
         .insert_resource(WindowDescriptor {
             title: "Roguelike Game".to_string(),
-            width: 80.0 * TILE_WIDTH,
-            height: 30.0 * TILE_HEIGHT,
+            width: WINDOW_COLUMNS as f32 * TILE_WIDTH,
+            height: WINDOW_ROWS as f32 * TILE_HEIGHT,
             present_mode: PresentMode::Immediate,
             ..Default::default()
         })

@@ -215,6 +215,37 @@ present_mode: PresentMode::Immediate,
 ```
 This make the movement more responsive and without any lag that was there previously.
 
+## Changing the color of the sprite from sprite sheet
+
+We can change the color by changing lines in the creation of the SpriteSheetBundle. We substitute the following line:
+```rust, noplayground
+            sprite: TextureAtlasSprite::new(94),
+```
+with those lines:
+```rust, noplayground
+            sprite: {
+                let mut sprite = TextureAtlasSprite::new(94);
+                sprite.color = Color::BLUE;
+                sprite
+            },
+```
+This code uses the fact that expressions in Rust allow to return values. So here we created the `TextureAtlasSprite` with `new()` and then changed the color property of the sprite. In the last line the sprite is returned back to the constructor of SpriteSheetBundle.
+
+Here is how the `.insert_bundle()` looks like now:
+
+```rust, noplayground
+        .insert_bundle(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+            sprite: {
+                let mut sprite = TextureAtlasSprite::new(94);
+                sprite.color = Color::BLUE;
+                sprite
+            },
+            ..Default::default()
+        })
+```
+
 The final code could be found here:
 [Chapter02 code](https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter02)
 
