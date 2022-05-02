@@ -83,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html" class="active"><strong aria-hidden="true">2.</strong> Drawing the "@" symbol and moving around</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html" class="active"><strong aria-hidden="true">2.</strong> Drawing the "@" symbol and moving around</a></li><li class="chapter-item expanded "><a href="chapter03.html"><strong aria-hidden="true">3.</strong> Map creation and adding walls</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -327,6 +327,30 @@ pub struct TilePosition {
 <pre><code class="language-rust  noplayground">present_mode: PresentMode::Immediate,
 </code></pre>
 <p>This make the movement more responsive and without any lag that was there previously.</p>
+<h2 id="changing-the-color-of-the-sprite-from-sprite-sheet"><a class="header" href="#changing-the-color-of-the-sprite-from-sprite-sheet">Changing the color of the sprite from sprite sheet</a></h2>
+<p>We can change the color by changing lines in the creation of the SpriteSheetBundle. We substitute the following line:</p>
+<pre><code class="language-rust  noplayground">            sprite: TextureAtlasSprite::new(94),
+</code></pre>
+<p>with those lines:</p>
+<pre><code class="language-rust  noplayground">            sprite: {
+                let mut sprite = TextureAtlasSprite::new(94);
+                sprite.color = Color::BLUE;
+                sprite
+            },
+</code></pre>
+<p>This code uses the fact that expressions in Rust allow to return values. So here we created the <code>TextureAtlasSprite</code> with <code>new()</code> and then changed the color property of the sprite. In the last line the sprite is returned back to the constructor of SpriteSheetBundle.</p>
+<p>Here is how the <code>.insert_bundle()</code> looks like now:</p>
+<pre><code class="language-rust  noplayground">        .insert_bundle(SpriteSheetBundle {
+            texture_atlas: texture_atlas_handle,
+            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
+            sprite: {
+                let mut sprite = TextureAtlasSprite::new(94);
+                sprite.color = Color::BLUE;
+                sprite
+            },
+            ..Default::default()
+        })
+</code></pre>
 <p>The final code could be found here:
 <a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter02">Chapter02 code</a></p>
 <p>The final code of <code>main.rs</code> looks like this:</p>
@@ -435,6 +459,9 @@ fn main() {
                                 <i class="fa fa-angle-left"></i>
                             </a>
 
+                            <a rel="next" href="chapter03.html" class="mobile-nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                                <i class="fa fa-angle-right"></i>
+                            </a>
 
                         <div style="clear: both"></div>
                     </nav>
@@ -446,6 +473,9 @@ fn main() {
                         <i class="fa fa-angle-left"></i>
                     </a>
 
+                    <a rel="next" href="chapter03.html" class="nav-chapters next" title="Next chapter" aria-label="Next chapter" aria-keyshortcuts="Right">
+                        <i class="fa fa-angle-right"></i>
+                    </a>
             </nav>
 
         </div>

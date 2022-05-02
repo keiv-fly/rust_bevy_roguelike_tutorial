@@ -3,8 +3,7 @@
     <head>
         <!-- Book generated using mdBook -->
         <meta charset="UTF-8">
-        <title>Roguelike tutorial with Rust and Bevy</title>
-        <meta name="robots" content="noindex" />
+        <title>Map creation and adding walls - Roguelike tutorial with Rust and Bevy</title>
 
 
         <!-- Custom HTML head -->
@@ -84,7 +83,7 @@
 
         <nav id="sidebar" class="sidebar" aria-label="Table of contents">
             <div class="sidebar-scrollbox">
-                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html"><strong aria-hidden="true">2.</strong> Drawing the "@" symbol and moving around</a></li><li class="chapter-item expanded "><a href="chapter03.html"><strong aria-hidden="true">3.</strong> Map creation and adding walls</a></li></ol>
+                <ol class="chapter"><li class="chapter-item expanded affix "><a href="index.html">Introduction</a></li><li class="chapter-item expanded "><a href="chapter01.html"><strong aria-hidden="true">1.</strong> Setting Up</a></li><li class="chapter-item expanded "><a href="chapter02.html"><strong aria-hidden="true">2.</strong> Drawing the "@" symbol and moving around</a></li><li class="chapter-item expanded "><a href="chapter03.html" class="active"><strong aria-hidden="true">3.</strong> Map creation and adding walls</a></li></ol>
             </div>
             <div id="sidebar-resize-handle" class="sidebar-resize-handle"></div>
         </nav>
@@ -122,6 +121,9 @@
                         <a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/tutorial" title="Git repository" aria-label="Git repository">
                             <i id="git-repository-button" class="fa fa-github"></i>
                         </a>
+                        <a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/edit/main/tutorial/src/chapter03.md" title="Suggest an edit" aria-label="Suggest an edit">
+                            <i id="git-edit-button" class="fa fa-edit"></i>
+                        </a>
 
                     </div>
                 </div>
@@ -148,377 +150,7 @@
 
                 <div id="content" class="content">
                     <main>
-                        <h1 id="introduction"><a class="header" href="#introduction">Introduction</a></h1>
-<p>This is a tutorial to create a roguelike game using <a href="https://www.rust-lang.org/">Rust</a> and <a href="https://bevyengine.org/">Bevy 0.7</a>.</p>
-<p>The tutorial is based on <a href="https://rogueliketutorials.com/tutorials/tcod/v2/">Yet Another Roguelike Tutorial - Written in Python 3 and TCOD</a> and the Bevy Roguelike code available <a href="https://github.com/thephet/BevyRoguelike">here</a> </p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="setting-up"><a class="header" href="#setting-up">Setting Up</a></h1>
-<h2 id="prior-knowledge"><a class="header" href="#prior-knowledge">Prior knowledge</a></h2>
-<p>This tutorial assumes that a reader is familiar with Rust, but of course you can try to read it without knowing Rust.</p>
-<h2 id="installing-rust"><a class="header" href="#installing-rust">Installing Rust</a></h2>
-<p>In this tutorial I will be installing the latest Rust version and also Rust nightly build for faster development on Windows. The nightly build allows to compile Bevy in a dynamic library once and then reuse it for all the following compilations.</p>
-<p><a href="https://www.rust-lang.org/tools/install">Download Rust from here.</a> I recommend using a 64-bit version. For Windows the button has a title &quot;DOWNLOAD RUSTUP-INIT.EXE (64-BIT)&quot;. I used the default settings in the installation.</p>
-<h2 id="creating-a-project"><a class="header" href="#creating-a-project">Creating a project</a></h2>
-<p>I created a new project by executing the following command:</p>
-<pre><code>cargo new bevy_roguelike_tutorial
-</code></pre>
-<p>and go inside this folder:</p>
-<pre><code>cd bevy_roguelike_tutorial
-</code></pre>
-<p>This created the following folder structure:</p>
-<pre><code>bevy_roguelike_tutorial
-├── .gitignore
-├── Cargo.lock
-├── Cargo.toml
-├── src
-│   └── main.rs
-└── target
-    └── ...
-</code></pre>
-<p>With the main code in <code>src/main.rs</code></p>
-<pre><pre class="playground"><code class="language-rust">fn main() {
-    println!(&quot;Hello, world!&quot;);
-}
-</code></pre></pre>
-<p>Let's compile the code and see that this Rust program is working.</p>
-<p>In the command line execute:</p>
-<pre><code>cargo run
-</code></pre>
-<p>And you should have the following output:</p>
-<pre><code>   Compiling bevy_roguelike_tutorial v0.1.0 (C:\...\bevy_roguelike_tutorial)
-    Finished dev [unoptimized + debuginfo] target(s) in 0.33s
-     Running `target\debug\bevy_roguelike_tutorial.exe`
-Hello, world!
-</code></pre>
-<h2 id="install-bevy"><a class="header" href="#install-bevy">Install Bevy</a></h2>
-<p>Here I am setting setting up to use Rust nightly build and use Bevy as a dynamic library.</p>
-<p>To install Rust nightly build execute the following command:</p>
-<pre><code>rustup install nightly
-</code></pre>
-<p>Create a new file <code>bevy_roguelike_tutorial/rust-toolchain</code> with the following content:</p>
-<pre><code>nightly
-</code></pre>
-<p>This step is specifically for Windows users. On Linux the build should work without it:</p>
-<p>Create a directory <code>bevy_roguelike_tutorial/.cargo</code> and put a file with name <code>config.toml</code> with the following content:</p>
-<pre><code>[target.x86_64-pc-windows-msvc]
-linker = &quot;rust-lld.exe&quot;
-rustflags = [&quot;-Zshare-generics=off&quot;]
-</code></pre>
-<p>A new line should be added to <code>Cargo.toml</code> after <code>[dependencies]</code>:</p>
-<pre><code>[dependencies]
-bevy = { version = &quot;0.7.0&quot;, features = [&quot;dynamic&quot;] }
-</code></pre>
-<p>After that run</p>
-<pre><code>cargo run
-</code></pre>
-<p>After several minutes of compiling you should see the following output:</p>
-<pre><code>    Finished dev [unoptimized + debuginfo] target(s) in 4m 14s
-     Running `target\debug\bevy_roguelike_tutorial.exe`
-Hello, world!
-</code></pre>
-<p>Everything is compiled and Bevy is added. Goal achieved!</p>
-<p>The final code could be found here:
-<a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter01">Chapter 01 code</a></p>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="drawing-the--symbol-and-moving-around"><a class="header" href="#drawing-the--symbol-and-moving-around">Drawing the &quot;@&quot; symbol and moving around</a></h1>
-<h2 id="showing-an-empty-black-window-with-bevy"><a class="header" href="#showing-an-empty-black-window-with-bevy">Showing an empty black window with Bevy</a></h2>
-<p>Let's change the code in <code>main.rs</code> to the following:</p>
-<pre><code class="language-rust  noplayground">use bevy::prelude::{App, ClearColor, Color, DefaultPlugins, WindowDescriptor};
-
-fn main() {
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * 10.0,
-            height: 50.0 * 10.0,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
-        .run();
-}
-</code></pre>
-<p>And we get the following window:</p>
-<p><img src="img/Roguelike02-01.png" alt="Roguelike02-01" /></p>
-<p>This part: </p>
-<pre><code class="language-rust  noplayground">        .insert_resource(WindowDescriptor {
-            title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * 22.0,
-            height: 50.0 * 36.0,
-            ..Default::default()
-        })
-</code></pre>
-<p>is responsible for the creation of the window. 22 is the width in pixels in our font and 36 is the height. 80 and 50 are the number of columns and lines we will have in our window.</p>
-<p>This line is responsible for almost black color of the background:</p>
-<pre><code class="language-rust  noplayground">        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-</code></pre>
-<p>And this part:</p>
-<pre><code class="language-rust  noplayground">        .add_plugins(DefaultPlugins)
-</code></pre>
-<p>adds default plugins of Bevy to the game engine.</p>
-<h2 id="adding-png-font-to-resources"><a class="header" href="#adding-png-font-to-resources">Adding PNG font to resources</a></h2>
-<p>In this tutorial I used the font <code>DejaVu Sans Mono</code>. I found a PNG file of this font <a href="https://allfont.ru/download/dejavu-sans-mono/">here</a>. Then edited it a bit and got the PNG that I liked. You can download the font from <code>code/chapter02/assets/DejaVu Sans Mono22.png</code> in the repository of this tutorial.</p>
-<p>To load the PNG font I added the following code to <code>main.rs</code>:</p>
-<pre><code class="language-rust  noplayground">fn setup(
-    mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    mut texture_atlases: ResMut&lt;Assets&lt;TextureAtlas&gt;&gt;,
-) {
-    // Setup the sprite sheet
-    let texture_handle = asset_server.load(&quot;DejaVu Sans Mono22.png&quot;);
-    let texture_atlas = TextureAtlas::from_grid(texture_handle, Vec2::new(22.0, 36.0), 31, 7);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-}
-</code></pre>
-<p>I also added the following line:</p>
-<pre><code class="language-rust  noplayground">        .add_startup_system(setup)
-</code></pre>
-<p>to the <code>main</code> function:</p>
-<pre><code class="language-rust  noplayground">fn main() {
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * 22.0,
-            height: 30.0 * 36.0,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_startup_system(setup)
-        .add_plugins(DefaultPlugins)
-        .run();
-}
-</code></pre>
-<p>The code is running, but nothing has changed because nothing yes uses the texture atlas.</p>
-<h2 id="drawing-the--symbol"><a class="header" href="#drawing-the--symbol">Drawing the <code>@</code> symbol</a></h2>
-<p>Let's create the player Entity and assign the <code>@</code> symbol:</p>
-<p>First we need to define the player component:</p>
-<pre><code class="language-rust  noplayground">#[derive(Component)]
-pub struct Player;
-</code></pre>
-<p>Then we should add the camera and the creation of the player to the <code>setup()</code> function:</p>
-<pre><code class="language-rust  noplayground">    // Add a 2D Camera
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-
-    // Spawn the player
-    commands
-        .spawn()
-        .insert(Player)
-        .insert_bundle(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            sprite: TextureAtlasSprite::new(94),
-            ..Default::default()
-        });
-</code></pre>
-<p>We need the camera to render our sprites.</p>
-<p>The player entity is created with the <code>spawn()</code> command and then we add components to this entity. To identify that this is a player we add the <code>Player</code> component. To add a sprite we add a <code>SpriteSheetBundle</code>. </p>
-<ul>
-<li><code>texture_atlas</code> is the atlas with our font that will be used. </li>
-<li><code>transform</code> is the position of the sprite. 0,0,0 means that it is in the center of the screen.</li>
-<li><code>sprite</code> is the sprite that we use from the sprite sheet. Number 94 is the position of the sprite in the sprite sheet (3 lines each have 31 symbols totaling 93 symbols. We start counting at 0 so 92 is the last symbol in line 3 and 93 is the first symbol in line 4. We need the second symbol so the number should be 94)</li>
-</ul>
-<p>And after <code>cargo run</code> we get the following picture:
-<img src="img/Roguelike02-02.png" alt="Roguelike02-02" /></p>
-<h2 id="moving-around"><a class="header" href="#moving-around">Moving around</a></h2>
-<p>Let's add the position in terms of columns and lines of characters (tile position) to the player. To do this we add the following component:</p>
-<pre><code class="language-rust  noplayground">#[derive(Component)]
-pub struct TilePosition {
-    x: i32,
-    y: i32,
-    z: i32,
-}
-</code></pre>
-<p>And also add the component to the player in the setup:</p>
-<pre><code class="language-rust  noplayground">    // Spawn the player
-    commands
-        .spawn()
-        .insert(Player)
-        .insert_bundle(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            sprite: TextureAtlasSprite::new(94),
-            ..Default::default()
-        })
-        .insert(TilePosition { x: 0, y: 0, z: 0 });
-</code></pre>
-<p>This function will transform tile position to transform position:</p>
-<pre><code class="language-rust  noplayground">fn tile_position_to_transform(tile_position: Mut&lt;TilePosition&gt;, mut transform: Mut&lt;Transform&gt;) {
-    transform.translation = Vec3::new(
-        tile_position.x as f32 * TILE_WIDTH,
-        tile_position.y as f32 * TILE_HEIGHT,
-        tile_position.z as f32,
-    );
-}
-</code></pre>
-<p>This is a new system that will read the keyboard input:</p>
-<pre><code class="language-rust  noplayground">fn keyboard_input(
-    keys: Res&lt;Input&lt;KeyCode&gt;&gt;,
-    mut q: Query&lt;(&amp;mut Transform, &amp;mut TilePosition), With&lt;Player&gt;&gt;,
-) {
-    let mut tile_position_changed = false;
-    let (transform, mut tile_position) = q.single_mut();
-    if keys.just_pressed(KeyCode::Up) {
-        tile_position.y += 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Down) {
-        tile_position.y -= 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Left) {
-        tile_position.x -= 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Right) {
-        tile_position.x += 1;
-        tile_position_changed = true;
-    }
-    if tile_position_changed {
-        tile_position_to_transform(tile_position, transform);
-    }
-}
-</code></pre>
-<p>Let's also add the system to the app:</p>
-<pre><code class="language-rust  noplayground">fn main() {
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * TILE_WIDTH,
-            height: 30.0 * TILE_HEIGHT,
-            present_mode: PresentMode::Immediate,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
-        .add_system(keyboard_input)
-        .run();
-}
-</code></pre>
-<p>Another thing that I changed in the code above is:</p>
-<pre><code class="language-rust  noplayground">present_mode: PresentMode::Immediate,
-</code></pre>
-<p>This make the movement more responsive and without any lag that was there previously.</p>
-<h2 id="changing-the-color-of-the-sprite-from-sprite-sheet"><a class="header" href="#changing-the-color-of-the-sprite-from-sprite-sheet">Changing the color of the sprite from sprite sheet</a></h2>
-<p>We can change the color by changing lines in the creation of the SpriteSheetBundle. We substitute the following line:</p>
-<pre><code class="language-rust  noplayground">            sprite: TextureAtlasSprite::new(94),
-</code></pre>
-<p>with those lines:</p>
-<pre><code class="language-rust  noplayground">            sprite: {
-                let mut sprite = TextureAtlasSprite::new(94);
-                sprite.color = Color::BLUE;
-                sprite
-            },
-</code></pre>
-<p>This code uses the fact that expressions in Rust allow to return values. So here we created the <code>TextureAtlasSprite</code> with <code>new()</code> and then changed the color property of the sprite. In the last line the sprite is returned back to the constructor of SpriteSheetBundle.</p>
-<p>Here is how the <code>.insert_bundle()</code> looks like now:</p>
-<pre><code class="language-rust  noplayground">        .insert_bundle(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            sprite: {
-                let mut sprite = TextureAtlasSprite::new(94);
-                sprite.color = Color::BLUE;
-                sprite
-            },
-            ..Default::default()
-        })
-</code></pre>
-<p>The final code could be found here:
-<a href="https://github.com/keiv-fly/rust_bevy_roguelike_tutorial/tree/main/code/chapter02">Chapter02 code</a></p>
-<p>The final code of <code>main.rs</code> looks like this:</p>
-<pre><code class="language-rust  noplayground">use bevy::prelude::{
-    App, AssetServer, Assets, ClearColor, Color, Commands, Component, DefaultPlugins, Input,
-    KeyCode, Mut, OrthographicCameraBundle, Query, Res, ResMut, SpriteSheetBundle, TextureAtlas,
-    TextureAtlasSprite, Transform, Vec2, Vec3, WindowDescriptor, With,
-};
-
-use bevy::window::PresentMode;
-
-const TILE_WIDTH: f32 = 22.;
-const TILE_HEIGHT: f32 = 36.;
-
-#[derive(Component)]
-pub struct Player;
-
-#[derive(Component)]
-pub struct TilePosition {
-    x: i32,
-    y: i32,
-    z: i32,
-}
-
-fn setup(
-    mut commands: Commands,
-    asset_server: Res&lt;AssetServer&gt;,
-    mut texture_atlases: ResMut&lt;Assets&lt;TextureAtlas&gt;&gt;,
-) {
-    // Setup the sprite sheet
-    let texture_handle = asset_server.load(&quot;DejaVu Sans Mono22.png&quot;);
-    let texture_atlas =
-        TextureAtlas::from_grid(texture_handle, Vec2::new(TILE_WIDTH, TILE_HEIGHT), 31, 7);
-    let texture_atlas_handle = texture_atlases.add(texture_atlas);
-
-    // Add a 2D Camera
-    commands.spawn_bundle(OrthographicCameraBundle::new_2d());
-
-    // Spawn the player
-    commands
-        .spawn()
-        .insert(Player)
-        .insert_bundle(SpriteSheetBundle {
-            texture_atlas: texture_atlas_handle,
-            transform: Transform::from_translation(Vec3::new(0., 0., 0.)),
-            sprite: TextureAtlasSprite::new(94),
-            ..Default::default()
-        })
-        .insert(TilePosition { x: 0, y: 0, z: 0 });
-}
-
-fn tile_position_to_transform(tile_position: Mut&lt;TilePosition&gt;, mut transform: Mut&lt;Transform&gt;) {
-    transform.translation = Vec3::new(
-        tile_position.x as f32 * TILE_WIDTH,
-        tile_position.y as f32 * TILE_HEIGHT,
-        tile_position.z as f32,
-    );
-}
-
-fn keyboard_input(
-    keys: Res&lt;Input&lt;KeyCode&gt;&gt;,
-    mut q: Query&lt;(&amp;mut Transform, &amp;mut TilePosition), With&lt;Player&gt;&gt;,
-) {
-    let mut tile_position_changed = false;
-    let (transform, mut tile_position) = q.single_mut();
-    if keys.just_pressed(KeyCode::Up) {
-        tile_position.y += 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Down) {
-        tile_position.y -= 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Left) {
-        tile_position.x -= 1;
-        tile_position_changed = true;
-    } else if keys.just_pressed(KeyCode::Right) {
-        tile_position.x += 1;
-        tile_position_changed = true;
-    }
-    if tile_position_changed {
-        tile_position_to_transform(tile_position, transform);
-    }
-}
-
-fn main() {
-    App::new()
-        .insert_resource(WindowDescriptor {
-            title: &quot;Roguelike Game&quot;.to_string(),
-            width: 80.0 * TILE_WIDTH,
-            height: 30.0 * TILE_HEIGHT,
-            present_mode: PresentMode::Immediate,
-            ..Default::default()
-        })
-        .insert_resource(ClearColor(Color::rgb(0.1, 0.1, 0.1)))
-        .add_plugins(DefaultPlugins)
-        .add_startup_system(setup)
-        .add_system(keyboard_input)
-        .run();
-}
-</code></pre>
-<div style="break-before: page; page-break-before: always;"></div><h1 id="map-creation-and-adding-walls"><a class="header" href="#map-creation-and-adding-walls">Map creation and adding walls</a></h1>
+                        <h1 id="map-creation-and-adding-walls"><a class="header" href="#map-creation-and-adding-walls">Map creation and adding walls</a></h1>
 <h2 id="moving-player-creation-into-separate-files"><a class="header" href="#moving-player-creation-into-separate-files">Moving player creation into separate files</a></h2>
 <p>Let's move the following code into <code>maps.rs</code>:</p>
 <pre><code class="language-rust  noplayground">use bevy::prelude::Component;
@@ -780,6 +412,9 @@ pub struct Wall;
 
                     <nav class="nav-wrapper" aria-label="Page navigation">
                         <!-- Mobile navigation buttons -->
+                            <a rel="prev" href="chapter02.html" class="mobile-nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                                <i class="fa fa-angle-left"></i>
+                            </a>
 
 
                         <div style="clear: both"></div>
@@ -788,6 +423,9 @@ pub struct Wall;
             </div>
 
             <nav class="nav-wide-wrapper" aria-label="Page navigation">
+                    <a rel="prev" href="chapter02.html" class="nav-chapters previous" title="Previous chapter" aria-label="Previous chapter" aria-keyshortcuts="Left">
+                        <i class="fa fa-angle-left"></i>
+                    </a>
 
             </nav>
 
@@ -811,13 +449,6 @@ pub struct Wall;
 
         <!-- Custom JS scripts -->
 
-        <script type="text/javascript">
-        window.addEventListener('load', function() {
-            MathJax.Hub.Register.StartupHook('End', function() {
-                window.setTimeout(window.print, 100);
-            });
-        });
-        </script>
 
     </body>
 </html>
